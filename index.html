@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Orçamento - NeuDelícias</title>
+  
+  <!-- Biblioteca JS para transformar HTML em PDF em 1 clique -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <!-- Fontes Oficiais -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --gold-bg: #fbe38e;
+      --gold-border: #e6c557;
+      --burgundy: #7a0f1c;
+      --dark-text: #222222;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #f0f2f5;
+      color: var(--dark-text);
+      padding: 20px 10px;
+    }
+
+    .app-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Painel do Formulário de Entrada (Não sai no PDF) */
+    .controls-panel {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+    }
+
+    .controls-panel h2 {
+      font-size: 1.1rem;
+      color: var(--burgundy);
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 5px;
+      color: #444;
+    }
+
+    .form-group input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--burgundy);
+    }
+
+    .input-with-btn {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-with-btn input {
+      flex: 1;
+    }
+
+    .btn-add {
+      background-color: #2b8a3e;
+      color: white;
+      border: none;
+      padding: 0 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-action {
+      flex: 1;
+      background-color: var(--burgundy);
+      color: white;
+      border: none;
+      padding: 12px 15px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-action:hover {
+      background-color: #5e0b14;
+    }
+
+    /* Estilo do PDF em Si (Design Fiel ao Modelo NeuDelícias) */
+    .budget-document {
+      background: #ffffff;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 40px 35px;
+      border-radius: 4px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      position: relative;
+      background-image: radial-gradient(circle, rgba(235, 228, 210, 0.35) 12%, transparent 12%);
+      background-size: 22px 22px;
+    }
+
+    .doc-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .doc-title-main {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #111;
+      text-transform: uppercase;
+    }
+
+    .doc-subtitle-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.3rem;
+      font-weight: 700;
+      font-style: italic;
+      color: #111;
+      margin-top: -8px;
+    }
+
+    .doc-kit-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 15px;
+      color: #111;
+    }
+
+    /* Tabela do Cardápio */
+    .menu-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 0;
+      border: 1.5px solid #888;
+      background-color: rgba(255, 255, 255, 0.85);
+    }
+
+    .menu-table th {
+      background-color: var(--gold-bg);
+      border: 1px solid #999;
+      padding: 8px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      width: 50%;
+    }
+
+    .menu-table td {
+      border: 1px solid #aaa;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #222;
+      height: 34px;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+
+    .menu-table td.empty-cell {
+      background-color: transparent;
+    }
+
+    .service-row td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--burgundy);
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Box de Valores em Amarelo */
+    .price-box {
+      background-color: var(--gold-bg);
+      border: 1.5px solid #888;
+      border-top: none;
+      padding: 15px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .price-box p {
+      font-weight: 800;
+      color: var(--burgundy);
+      font-size: 0.95rem;
+      line-height: 1.4;
+      margin: 3px 0;
+    }
+
+    /* Faixa de Qualidades */
+    .qualities-bar {
+      display: flex;
+      border: 1.5px solid #999;
+      background-color: var(--gold-bg);
+      margin-top: 20px;
+    }
+
+    .quality-item {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      color: #222;
+      text-transform: uppercase;
+      border-right: 1.5px solid #999;
+    }
+
+    .quality-item:last-child {
+      border-right: none;
+    }
+
+    /* Rodapé com Infos da Empresa e Logo */
+    .footer-section {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .company-info {
+      flex: 1;
+    }
+
+    .disclaimer-text {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #222;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    .contact-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .contact-line.highlight {
+      color: var(--burgundy);
+      font-weight: 800;
+    }
+
+    .logo-circle {
+      width: 120px;
+      height: 120px;
+      background-color: var(--burgundy);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .logo-circle .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    .logo-circle .brand-sub {
+      font-size: 0.55rem;
+      letter-spacing: 0.5px;
+      margin-top: -2px;
+    }
+
+    /* Esconde botões de remoção no PDF */
+    .item-remove {
+      color: red;
+      margin-left: 8px;
+      cursor: pointer;
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Formulário de Preenchimento -->
+    <div class="controls-panel">
+      <h2>Montar Orçamento NeuDelícias</h2>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Título do Menu/Kit:</label>
+          <input type="text" id="menuTitleInput" value="KIT LANCHE" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Valor por Pessoa (R$):</label>
+          <input type="number" id="priceInput" value="15" step="0.5" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Quantidade de Pessoas:</label>
+          <input type="number" id="peopleInput" value="35" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Taxa Extra / Nota Fiscal (R$):</label>
+          <input type="number" id="taxInput" value="50" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Adicionar Opção de ENTRADA / SALGADO:</label>
+          <div class="input-with-btn">
+            <input type="text" id="entradaInput" placeholder="Ex: 01 SANDUICHE NATURAL" onkeypress="handleKey(event, 'entrada')">
+            <button class="btn-add" onclick="addItem('entrada')">+</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Adicionar Opção de JANTA / PRATO:</label>
+          <div class="input-with-btn">
+            <input type="text" id="jantaInput" placeholder="Ex: 01 SUCO" onkeypress="handleKey(event, 'janta')">
+            <button class="btn-add" onclick="addItem('janta')">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-action" onclick="generatePDF()"> baixar PDF Agora</button>
+      </div>
+    </div>
+
+    <!-- DOCUMENTO VISUAL DO ORÇAMENTO -->
+    <div class="budget-document" id="pdfDocument">
+      
+      <div class="doc-header">
+        <div class="doc-title-main">ORÇAMENTO</div>
+        <div class="doc-subtitle-brand">Neudelicias</div>
+        <div class="doc-kit-title" id="displayMenuTitle">KIT LANCHE</div>
+      </div>
+
+      <table class="menu-table">
+        <thead>
+          <tr>
+            <th>OPÇÕES DE ENTRADA</th>
+            <th>OPÇÕES DE JANTA</th>
+          </tr>
+        </thead>
+        <tbody id="menuTableBody">
+          <!-- Linhas adicionadas dinamicamente via JS -->
+        </tbody>
+        <tfoot>
+          <tr class="service-row">
+            <td colspan="2">SERVIÇO E LOUÇAS INCLUSO</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="price-box">
+        <p id="displayPerPersonText">R$15,00 (quinze reais) por pessoa.</p>
+        <p id="displayTotalText">valor total equivalente a 35 pessoas = R$525,00 (quinhentos e vinte cinco reais)</p>
+        <p id="displayTaxText">+ R$ 50,00 da Emissão da Nota Fiscal</p>
+      </div>
+
+      <div class="qualities-bar">
+        <div class="quality-item">COMPROMISSO</div>
+        <div class="quality-item">QUALIDADE</div>
+        <div class="quality-item">EXPERIÊNCIA</div>
+      </div>
+
+      <div class="footer-section">
+        <div class="company-info">
+          <div class="disclaimer-text">
+            ESTAMOS À DISPOSIÇÃO PARA ESCLARECER QUAISQUER DÚVIDAS OU FORNECER INFORMAÇÕES ADICIONAIS
+          </div>
+          
+          <div class="contact-line">
+             (88) 99984-1599
+          </div>
+          <div class="contact-line">
+             IRINEUDALIMA123@HOTMAIL.COM
+          </div>
+          <div class="contact-line">
+            <strong>CNPJ:</strong> 58.428.085/0001-93
+          </div>
+          <div class="contact-line highlight">
+            Espaço Neudelicias, Rancho Chico Diniz (antiga casa amarela)
+          </div>
+        </div>
+
+        <div class="logo-circle">
+          <div class="brand-name">NeuDelícias</div>
+          <div class="brand-sub">culinária caseira</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Listas de opções
+    let entradas = ["01 SANDUICHE NATURAL", "01 TORTA DE FRANGO", "01 FATIA DE BOLO", "01 PÃO DE LEITE COM PATE"];
+    let jantas = ["01 SUCO"];
+
+    function handleKey(event, type) {
+      if (event.key === 'Enter') {
+        addItem(type);
+      }
+    }
+
+    function addItem(type) {
+      if (type === 'entrada') {
+        const input = document.getElementById('entradaInput');
+        if (input.value.trim() !== '') {
+          entradas.push(input.value.trim().toUpperCase());
+          input.value = '';
+        }
+      } else {
+        const input = document.getElementById('jantaInput');
+        if (input.value.trim() !== '') {
+          jantas.push(input.value.trim().toUpperCase());
+          input.value = '';
+        }
+      }
+      updateDocument();
+    }
+
+    function removeItem(type, index) {
+      if (type === 'entrada') {
+        entradas.splice(index, 1);
+      } else {
+        jantas.splice(index, 1);
+      }
+      updateDocument();
+    }
+
+    // Função simples de número por extenso para Reais
+    function valorPorExtenso(valor) {
+      if (valor === 15) return "quinze reais";
+      if (valor === 525) return "quinhentos e vinte cinco reais";
+      
+      const inteiros = Math.floor(valor);
+      return `${inteiros} reais`;
+    }
+
+    function updateDocument() {
+      // Título do Menu
+      document.getElementById('displayMenuTitle').innerText = 
+        document.getElementById('menuTitleInput').value.toUpperCase() || 'KIT LANCHE';
+
+      // Tabela de Opções
+      const tbody = document.getElementById('menuTableBody');
+      tbody.innerHTML = '';
+
+      const maxRows = Math.max(entradas.length, jantas.length, 4);
+
+      for (let i = 0; i < maxRows; i++) {
+        const tr = document.createElement('tr');
+        
+        // Celda Entrada
+        const tdEntrada = document.createElement('td');
+        if (entradas[i]) {
+          tdEntrada.innerHTML = `${entradas[i]} <span class="item-remove" onclick="removeItem('entrada', ${i})" title="Remover">✕</span>`;
+        } else {
+          tdEntrada.className = 'empty-cell';
+        }
+
+        // Celda Janta
+        const tdJanta = document.createElement('td');
+        if (jantas[i]) {
+          tdJanta.innerHTML = `${jantas[i]} <span class="item-remove" onclick="removeItem('janta', ${i})" title="Remover">✕</span>`;
+        } else {
+          tdJanta.className = 'empty-cell';
+        }
+
+        tr.appendChild(tdEntrada);
+        tr.appendChild(tdJanta);
+        tbody.appendChild(tr);
+      }
+
+      // Cálculos
+      const price = parseFloat(document.getElementById('priceInput').value) || 0;
+      const people = parseInt(document.getElementById('peopleInput').value) || 0;
+      const tax = parseFloat(document.getElementById('taxInput').value) || 0;
+      const total = price * people;
+
+      document.getElementById('displayPerPersonText').innerText = 
+        `R$${price.toFixed(2).replace('.', ',')} (${valorPorExtenso(price)}) por pessoa.`;
+
+      document.getElementById('displayTotalText').innerText = 
+        `valor total equivalente a ${people} pessoas = R$${total.toFixed(2).replace('.', ',')} (${valorPorExtenso(total)})`;
+
+      if (tax > 0) {
+        document.getElementById('displayTaxText').style.display = 'block';
+        document.getElementById('displayTaxText').innerText = 
+          `+ R$ ${tax.toFixed(2).replace('.', ',')} da Emissão da Nota Fiscal`;
+      } else {
+        document.getElementById('displayTaxText').style.display = 'none';
+      }
+    }
+
+    // Função para gerar PDF
+    function generatePDF() {
+      // Oculta botões de remoção (X) durante a geração do PDF
+      const removes = document.querySelectorAll('.item-remove');
+      removes.forEach(el => el.style.display = 'none');
+
+      const element = document.getElementById('pdfDocument');
+      const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     'orcamento_neudelicias.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        // Exibe novamente os botões X na tela
+        removes.forEach(el => el.style.display = 'inline');
+      });
+    }
+
+    // Inicializa a exibição
+    updateDocument();
+  </script>
+</body>
+</html>
