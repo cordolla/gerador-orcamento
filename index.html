@@ -175,7 +175,7 @@
       max-width: 100%;
       margin: 0 auto;
       min-height: 297mm;
-      padding: 35px 9.8% 30px;
+      padding: 35px 20.6mm 30px;
       box-shadow: 0 5px 25px rgba(0,0,0,0.12);
       position: relative;
       display: flex;
@@ -236,6 +236,7 @@
     /* Tabela Central */
     .menu-table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       margin-top: 0;
       border: 1.5px solid #666;
@@ -265,6 +266,8 @@
       vertical-align: middle;
       text-transform: uppercase;
       text-align: center;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .menu-table td.empty-cell {
@@ -686,14 +689,26 @@
         
         const td1 = document.createElement('td');
         if (entradas[i]) {
-          td1.innerHTML = `${entradas[i]} <span class="item-remove" onclick="removeItem('entrada', ${i})" title="Remover">✕</span>`;
+          td1.appendChild(document.createTextNode(`${entradas[i]} `));
+          const removeEntrada = document.createElement('span');
+          removeEntrada.className = 'item-remove';
+          removeEntrada.title = 'Remover';
+          removeEntrada.textContent = '✕';
+          removeEntrada.onclick = () => removeItem('entrada', i);
+          td1.appendChild(removeEntrada);
         } else {
           td1.className = 'empty-cell';
         }
 
         const td2 = document.createElement('td');
         if (jantas[i]) {
-          td2.innerHTML = `${jantas[i]} <span class="item-remove" onclick="removeItem('janta', ${i})" title="Remover">✕</span>`;
+          td2.appendChild(document.createTextNode(`${jantas[i]} `));
+          const removeJanta = document.createElement('span');
+          removeJanta.className = 'item-remove';
+          removeJanta.title = 'Remover';
+          removeJanta.textContent = '✕';
+          removeJanta.onclick = () => removeItem('janta', i);
+          td2.appendChild(removeJanta);
         } else {
           td2.className = 'empty-cell';
         }
@@ -730,16 +745,27 @@
           scale: 2,
           scrollX: 0,
           scrollY: 0,
+          backgroundColor: null,
           ignoreElements: item => item.classList && item.classList.contains('item-remove'),
           onclone: clonedDocument => {
-            const clonedElement = clonedDocument.getElementById('pdfDocument');
-            clonedElement.style.width = '210mm';
-            clonedElement.style.maxWidth = 'none';
-            clonedElement.style.minHeight = '297mm';
-            clonedElement.style.padding = '35px 9.8% 30px';
-            clonedElement.style.margin = '0';
-            clonedElement.style.boxShadow = 'none';
-            clonedElement.querySelectorAll('.item-remove').forEach(item => item.remove());
+            clonedDocument.querySelectorAll('#pdfDocument').forEach(clonedElement => {
+              clonedElement.style.width = '210mm';
+              clonedElement.style.maxWidth = 'none';
+              clonedElement.style.minHeight = '297mm';
+              clonedElement.style.padding = '35px 20.6mm 30px';
+              clonedElement.style.margin = '0';
+              clonedElement.style.boxShadow = 'none';
+              clonedElement.style.backgroundColor = 'transparent';
+              clonedElement.style.backgroundImage = 'none';
+              clonedElement.querySelectorAll('.item-remove').forEach(item => item.remove());
+
+              let ancestor = clonedElement.parentElement;
+              while (ancestor) {
+                ancestor.style.backgroundColor = 'transparent';
+                ancestor.style.backgroundImage = 'none';
+                ancestor = ancestor.parentElement;
+              }
+            });
           }
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -761,63 +787,27 @@
         });
       }));
 
+      const backgroundImage = new Image();
+      backgroundImage.src = new URL('fundo.png', document.baseURI).href;
+      await backgroundImage.decode();
+
       const worker = html2pdf().set(opt).from(element).toCanvas();
       const canvas = await worker.get('canvas');
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = canvas.width;
-      exportCanvas.height = canvas.height;
-      const exportContext = exportCanvas.getContext('2d');
-      exportContext.drawImage(canvas, 0, 0);
-
-      const horizontalBleed = Math.ceil(canvas.width / 100);
-      const verticalBleed = Math.ceil(canvas.height / 100);
-      exportContext.drawImage(
-        canvas,
-        0, verticalBleed, canvas.width, 1,
-        0, 0, canvas.width, verticalBleed
-      );
-      exportContext.drawImage(
-        canvas,
-        0, canvas.height - verticalBleed - 1, canvas.width, 1,
-        0, canvas.height - verticalBleed, canvas.width, verticalBleed
-      );
-      exportContext.drawImage(
-        canvas,
-        horizontalBleed, 0, 1, canvas.height,
-        0, 0, horizontalBleed, canvas.height
-      );
-      exportContext.drawImage(
-        canvas,
-        canvas.width - horizontalBleed - 1, 0, 1, canvas.height,
-        canvas.width - horizontalBleed, 0, horizontalBleed, canvas.height
-      );
-      exportContext.drawImage(
-        canvas,
-        horizontalBleed, verticalBleed, 1, 1,
-        0, 0, horizontalBleed, verticalBleed
-      );
-      exportContext.drawImage(
-        canvas,
-        canvas.width - horizontalBleed - 1, verticalBleed, 1, 1,
-        canvas.width - horizontalBleed, 0, horizontalBleed, verticalBleed
-      );
-      exportContext.drawImage(
-        canvas,
-        horizontalBleed, canvas.height - verticalBleed - 1, 1, 1,
-        0, canvas.height - verticalBleed, horizontalBleed, verticalBleed
-      );
-      exportContext.drawImage(
-        canvas,
-        canvas.width - horizontalBleed - 1, canvas.height - verticalBleed - 1, 1, 1,
-        canvas.width - horizontalBleed, canvas.height - verticalBleed, horizontalBleed, verticalBleed
-      );
+      const pdfCanvas = document.createElement('canvas');
+      pdfCanvas.width = canvas.width;
+      pdfCanvas.height = canvas.height;
+      const pdfContext = pdfCanvas.getContext('2d');
+      pdfContext.drawImage(backgroundImage, 0, 0, pdfCanvas.width, pdfCanvas.height);
+      // Compensa o deslocamento de 1,9 mm para a direita introduzido pela captura html2canvas.
+      const horizontalAlignmentOffset = pdfCanvas.width * (1.9 / 210);
+      pdfContext.drawImage(canvas, -horizontalAlignmentOffset, 0);
 
       await worker.toPdf();
       const pdf = await worker.get('pdf');
       const pageWidth = 210;
       const pageHeight = 297;
-      const pageCanvasHeight = Math.round(exportCanvas.width * pageHeight / pageWidth);
-      const pageCount = Math.ceil(exportCanvas.height / pageCanvasHeight);
+      const pageCanvasHeight = Math.round(pdfCanvas.width * pageHeight / pageWidth);
+      const pageCount = Math.ceil(pdfCanvas.height / pageCanvasHeight);
 
       for (let page = pdf.getNumberOfPages(); page > 0; page--) {
         pdf.deletePage(page);
@@ -827,19 +817,19 @@
         pdf.addPage('a4', 'portrait');
 
         const sourceY = page * pageCanvasHeight;
-        const sourceHeight = Math.min(pageCanvasHeight, exportCanvas.height - sourceY);
+        const sourceHeight = Math.min(pageCanvasHeight, pdfCanvas.height - sourceY);
         const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = exportCanvas.width;
+        pageCanvas.width = pdfCanvas.width;
         pageCanvas.height = sourceHeight;
         pageCanvas.getContext('2d').drawImage(
-          exportCanvas,
-          0, sourceY, exportCanvas.width, sourceHeight,
-          0, 0, exportCanvas.width, sourceHeight
+          pdfCanvas,
+          0, sourceY, pdfCanvas.width, sourceHeight,
+          0, 0, pdfCanvas.width, sourceHeight
         );
 
         const imageHeight = sourceHeight === pageCanvasHeight
           ? pageHeight
-          : sourceHeight * pageWidth / exportCanvas.width;
+          : sourceHeight * pageWidth / pdfCanvas.width;
         pdf.addImage(pageCanvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, pageWidth, imageHeight);
       }
 
