@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
   <title>Gerador de Orçamento - NeuDelícias</title>
   
   <!-- Biblioteca para gerar o PDF -->
@@ -332,31 +333,41 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
+      gap: 14px;
     }
 
     .company-info {
       flex: 1;
+      min-width: 0;
       padding-right: 10px;
     }
 
     .disclaimer-text {
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: #111;
+      font-size: 0.64rem;
+      font-weight: 700;
+      color: #333;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      line-height: 1.35;
+      letter-spacing: 0.35px;
+      margin-bottom: 10px;
+      line-height: 1.45;
     }
 
     .contact-line {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: #222;
-      margin-bottom: 3px;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .contact-line a,
+    .contact-line a:visited {
+      color: inherit !important;
+      text-decoration: none !important;
+      pointer-events: none;
     }
 
     .contact-line.highlight {
@@ -366,8 +377,8 @@
 
     /* Logotipo Fixo Rodapé (logo.png) */
     .logo-container {
-      width: 140px;
-      height: 140px;
+      width: 155px;
+      height: 155px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
@@ -734,6 +745,8 @@
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
+          windowWidth: 794,
+          windowHeight: 1123,
           scrollX: 0,
           scrollY: 0,
           backgroundColor: null,
@@ -748,6 +761,20 @@
               clonedElement.style.boxShadow = 'none';
               clonedElement.style.backgroundColor = 'transparent';
               clonedElement.style.backgroundImage = 'none';
+              const brandMark = clonedElement.querySelector('.doc-brand-mark');
+              if (brandMark) brandMark.style.maxWidth = 'none';
+
+              const spacer = clonedElement.querySelector('.document-spacer');
+              if (spacer) {
+                spacer.style.flex = '1 1 180px';
+                spacer.style.minHeight = '0';
+              }
+
+              clonedElement.querySelectorAll('.contact-line a').forEach(link => {
+                link.style.color = 'inherit';
+                link.style.textDecoration = 'none';
+              });
+
               clonedElement.querySelectorAll('.item-remove').forEach(item => item.remove());
 
               let ancestor = clonedElement.parentElement;
