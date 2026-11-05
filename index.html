@@ -297,8 +297,8 @@
     .price-box p {
       font-weight: 800;
       color: var(--burgundy);
-      font-size: 0.9rem;
-      line-height: 1.4;
+      font-size: 0.72rem;
+      line-height: 1.35;
       margin: 2px 0;
     }
 
@@ -430,39 +430,39 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Subtítulo do Evento:</label>
-          <input type="text" id="locationInput" value="Só Confraternização" oninput="updateDocument()">
+          <input type="text" id="locationInput" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Quantidade de Pessoas:</label>
-          <input type="number" id="peopleInput" value="100" oninput="updateDocument()">
+          <input type="number" id="peopleInput" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Título Coluna Esquerda:</label>
-          <input type="text" id="col1TitleInput" value="OPÇÕES ENTRADAS" oninput="updateDocument()">
+          <input type="text" id="col1TitleInput" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Título Coluna Direita:</label>
-          <input type="text" id="col2TitleInput" value="OPÇÕES JANTA" oninput="updateDocument()">
+          <input type="text" id="col2TitleInput" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Valor por Pessoa (R$):</label>
-          <input type="number" id="priceInput" value="48" step="0.5" oninput="updateDocument()">
+          <input type="number" id="priceInput" step="0.5" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Taxa da Nota Fiscal (R$):</label>
-          <input type="number" id="taxInput" placeholder="Ex: 50,00" min="0" step="0.01" oninput="updateDocument()">
+          <input type="number" id="taxInput" min="0" step="0.01" oninput="updateDocument()">
         </div>
 
         <div class="items-grid">
           <div class="form-group">
             <label>Adicionar item na Esquerda:</label>
             <div class="input-with-btn">
-              <input type="text" id="entradaInput" placeholder="Ex: Salgados Fritos" onkeypress="handleKey(event, 'entrada')">
+              <input type="text" id="entradaInput" onkeypress="handleKey(event, 'entrada')">
               <button class="btn-add" onclick="addItem('entrada')">+</button>
             </div>
           </div>
@@ -470,7 +470,7 @@
           <div class="form-group">
             <label>Adicionar item na Direita:</label>
             <div class="input-with-btn">
-              <input type="text" id="jantaInput" placeholder="Ex: 2 Proteínas" onkeypress="handleKey(event, 'janta')">
+              <input type="text" id="jantaInput" onkeypress="handleKey(event, 'janta')">
               <button class="btn-add" onclick="addItem('janta')">+</button>
             </div>
           </div>
@@ -492,14 +492,14 @@
         <div class="doc-brand-mark">
           <img src="logo-texto.png" alt="Neudelicias" class="doc-subtitle-brand-img">
         </div>
-        <div class="doc-sub-location" id="displayLocation">Só Confraternização</div>
+        <div class="doc-sub-location" id="displayLocation"></div>
       </div>
 
       <table class="menu-table">
         <thead>
           <tr>
-            <th id="thCol1">OPÇÕES ENTRADAS</th>
-            <th id="thCol2">OPÇÕES JANTA</th>
+            <th id="thCol1"></th>
+            <th id="thCol2"></th>
           </tr>
         </thead>
         <tbody id="menuTableBody">
@@ -512,9 +512,9 @@
         </tfoot>
       </table>
 
-      <div class="price-box">
-        <p id="displayPerPersonText">R$48,00 (quarenta e oito reais) por pessoa.</p>
-        <p id="displayTotalText">valor total equivalente a 100 pessoas = R$4.800,00 (quatro mil e oitocentos reais)</p>
+      <div class="price-box" id="priceBox" hidden>
+        <p id="displayPerPersonText" hidden></p>
+        <p id="displayTotalText" hidden></p>
         <p id="displayTaxText" hidden></p>
       </div>
 
@@ -549,29 +549,8 @@
   </div>
 
   <script>
-    let entradas = [
-      "SALGADOS FRITOS E DE FORNO",
-      "TORRADAS",
-      "PÃOZINHO DE LEITE",
-      "PATE DE FRANGO",
-      "PATE DE ATUM",
-      "MINI HAMABUGUER",
-      "3 TABUAS DE FRIOS",
-      "EMPADAS ABERTO COM GOIABA E QUEIJO",
-      "TORTA DE FRANGO",
-      "TABUAS DE FRIOS COM FRUTAS"
-    ];
-
-    let jantas = [
-      "2 PROTEINAS",
-      "2 TIPOS DE ARROZ (BRANCO E A GREGA)",
-      "2 SALADAS",
-      "1 FAROFA",
-      "1 MASSA",
-      "SUCO",
-      "REFRIGERANTE",
-      "AGUA"
-    ];
+    let entradas = [];
+    let jantas = [];
 
     function handleKey(event, type) {
       if (event.key === 'Enter') {
@@ -718,22 +697,34 @@
         tbody.appendChild(tr);
       }
 
-      const price = parseFloat(document.getElementById('priceInput').value) || 0;
-      const people = parseInt(document.getElementById('peopleInput').value) || 0;
+      const priceInput = document.getElementById('priceInput').value;
+      const peopleInput = document.getElementById('peopleInput').value;
+      const hasPrice = priceInput !== '';
+      const hasPeople = peopleInput !== '';
+      const price = hasPrice ? parseFloat(priceInput) : 0;
+      const people = hasPeople ? parseInt(peopleInput, 10) : 0;
       const tax = parseFloat(document.getElementById('taxInput').value) || 0;
       const total = price * people;
 
-      document.getElementById('displayPerPersonText').innerText = 
-        `R$${price.toFixed(2).replace('.', ',')} (${numeroPorExtenso(price)}) por pessoa.`;
+      const perPersonText = document.getElementById('displayPerPersonText');
+      perPersonText.hidden = !hasPrice;
+      perPersonText.innerText = hasPrice
+        ? `R$${price.toFixed(2).replace('.', ',')} (${numeroPorExtenso(price)}) por pessoa.`
+        : '';
 
-      document.getElementById('displayTotalText').innerText = 
-        `valor total equivalente a ${people} pessoas = R$${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${numeroPorExtenso(total)})`;
+      const totalText = document.getElementById('displayTotalText');
+      totalText.hidden = !hasPrice || !hasPeople;
+      totalText.innerText = hasPrice && hasPeople
+        ? `valor total equivalente a ${people} pessoas = R$${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${numeroPorExtenso(total)})`
+        : '';
 
       const taxText = document.getElementById('displayTaxText');
       taxText.hidden = tax <= 0;
       taxText.innerText = tax > 0
         ? `+ R$ ${tax.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} da Emissão da Nota Fiscal`
         : '';
+      document.getElementById('priceBox').hidden =
+        !hasPrice && tax <= 0;
     }
 
     async function createPDFBlob() {
