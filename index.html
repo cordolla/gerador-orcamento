@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Orçamento - NeuDelícias</title>
   
-  <!-- Biblioteca JS para transformar HTML em PDF em 1 clique -->
+  <!-- Biblioteca para gerar o PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
-  <!-- Fontes Oficiais -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --gold-bg: #fbe38e;
       --gold-border: #e6c557;
       --burgundy: #7a0f1c;
-      --dark-text: #222222;
+      --dark-text: #1a1a1a;
     }
 
     * {
@@ -33,21 +33,21 @@
     }
 
     .app-container {
-      max-width: 800px;
+      max-width: 850px;
       margin: 0 auto;
     }
 
-    /* Painel do Formulário de Entrada (Não sai no PDF) */
+    /* Painel de Controles (Não sai no PDF) */
     .controls-panel {
       background: #ffffff;
-      padding: 20px;
+      padding: 25px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
+      margin-bottom: 30px;
     }
 
     .controls-panel h2 {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: var(--burgundy);
       margin-bottom: 15px;
       border-bottom: 2px solid #eee;
@@ -61,8 +61,19 @@
       margin-bottom: 15px;
     }
 
+    .items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      grid-column: 1 / -1;
+    }
+
     @media (max-width: 600px) {
       .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .items-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -110,105 +121,150 @@
       cursor: pointer;
     }
 
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
     .btn-action {
-      flex: 1;
+      width: 100%;
       background-color: var(--burgundy);
       color: white;
       border: none;
-      padding: 12px 15px;
-      font-size: 1rem;
+      padding: 14px;
+      font-size: 1.05rem;
       font-weight: 700;
       border-radius: 6px;
       cursor: pointer;
       text-align: center;
+      margin-top: 10px;
     }
 
     .btn-action:hover {
       background-color: #5e0b14;
     }
 
-    /* Estilo do PDF em Si (Design Fiel ao Modelo NeuDelícias) */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-whatsapp {
+      background-color: #168b48;
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #11743b;
+    }
+
+    .share-status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .share-status a {
+      color: var(--burgundy);
+      font-weight: 700;
+    }
+
+    /* ESTILO DO DOCUMENTO PDF */
     .budget-document {
-      background: #ffffff;
-      width: 100%;
-      max-width: 700px;
+      background-color: #f8f7f0;
+      background-image: url('fundo.png');
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      width: 210mm;
+      max-width: 100%;
       margin: 0 auto;
-      padding: 40px 35px;
-      border-radius: 4px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      min-height: 297mm;
+      padding: 35px 9.8% 30px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.12);
       position: relative;
-      background-image: radial-gradient(circle, rgba(235, 228, 210, 0.35) 12%, transparent 12%);
-      background-size: 22px 22px;
+      display: flex;
+      flex-direction: column;
     }
 
     .doc-header {
+      height: 136px;
       text-align: center;
-      margin-bottom: 20px;
+      position: relative;
     }
 
+    /* "ORÇAMENTO" em Montserrat puro e elegante */
     .doc-title-main {
-      font-size: 1.6rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 400;
+      letter-spacing: 4px;
+      color: #111;
+      text-transform: uppercase;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .doc-brand-mark {
+      width: 270px;
+      height: 64px;
+      position: absolute;
+      top: 15px;
+      left: calc(50% + 34px);
+      transform: translateX(-50%);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .doc-subtitle-brand-img {
+      width: 270px;
+      height: 270px;
+      max-width: none;
+      position: absolute;
+      top: -100px;
+      left: 0;
+    }
+
+    .doc-sub-location {
+      font-size: 0.85rem;
       font-weight: 700;
       letter-spacing: 2px;
-      color: #111;
-      text-transform: uppercase;
-    }
-
-    .doc-subtitle-brand {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.3rem;
-      font-weight: 700;
-      font-style: italic;
-      color: #111;
-      margin-top: -8px;
-    }
-
-    .doc-kit-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-top: 15px;
+      position: absolute;
+      bottom: 13px;
+      left: 0;
+      right: 0;
       color: #111;
     }
 
-    /* Tabela do Cardápio */
+    /* Tabela Central */
     .menu-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
-      margin-bottom: 0;
-      border: 1.5px solid #888;
-      background-color: rgba(255, 255, 255, 0.85);
+      margin-top: 0;
+      border: 1.5px solid #666;
+      background-color: rgba(255, 255, 255, 0.95);
     }
 
     .menu-table th {
       background-color: var(--gold-bg);
-      border: 1px solid #999;
-      padding: 8px;
-      font-size: 0.9rem;
+      border: 1px solid #777;
+      padding: 6px;
+      font-size: 0.68rem;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 0.7px;
       text-transform: uppercase;
       text-align: center;
       width: 50%;
+      color: #111;
     }
 
     .menu-table td {
       border: 1px solid #aaa;
-      padding: 8px 12px;
-      font-size: 0.85rem;
+      padding: 5px 8px;
+      font-size: 0.68rem;
       font-weight: 700;
       color: #222;
-      height: 34px;
+      height: 28px;
       vertical-align: middle;
       text-transform: uppercase;
+      text-align: center;
     }
 
     .menu-table td.empty-cell {
@@ -216,39 +272,40 @@
     }
 
     .service-row td {
-      border: 1px solid #aaa;
-      padding: 8px;
+      border: 1px solid #777;
+      background-color: #fff;
+      padding: 9px;
       text-align: center;
       font-weight: 800;
       color: var(--burgundy);
-      font-size: 0.9rem;
+      font-size: 0.72rem;
       letter-spacing: 0.5px;
     }
 
-    /* Box de Valores em Amarelo */
+    /* Caixa de Valores */
     .price-box {
       background-color: var(--gold-bg);
-      border: 1.5px solid #888;
+      border: 1.5px solid #666;
       border-top: none;
-      padding: 15px;
+      padding: 12px;
       text-align: center;
-      margin-bottom: 25px;
     }
 
     .price-box p {
       font-weight: 800;
       color: var(--burgundy);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.4;
-      margin: 3px 0;
+      margin: 2px 0;
     }
 
-    /* Faixa de Qualidades */
+    /* Barra de Qualidades */
     .qualities-bar {
       display: flex;
-      border: 1.5px solid #999;
+      border: 1.5px solid #777;
       background-color: var(--gold-bg);
-      margin-top: 20px;
+      margin-top: 0;
+      margin-bottom: 25px;
     }
 
     .quality-item {
@@ -256,20 +313,19 @@
       text-align: center;
       padding: 6px 0;
       font-weight: 800;
-      font-size: 0.8rem;
-      letter-spacing: 1px;
-      color: #222;
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      color: #111;
       text-transform: uppercase;
-      border-right: 1.5px solid #999;
+      border-right: 1.5px solid #777;
     }
 
     .quality-item:last-child {
       border-right: none;
     }
 
-    /* Rodapé com Infos da Empresa e Logo */
+    /* Rodapé com Logo */
     .footer-section {
-      margin-top: 25px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -277,26 +333,27 @@
 
     .company-info {
       flex: 1;
+      padding-right: 10px;
     }
 
     .disclaimer-text {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 800;
-      color: #222;
+      color: #111;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 15px;
-      line-height: 1.3;
+      margin-bottom: 12px;
+      line-height: 1.35;
     }
 
     .contact-line {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
+      gap: 6px;
+      font-size: 0.8rem;
       font-weight: 700;
-      color: #333;
-      margin-bottom: 4px;
+      color: #222;
+      margin-bottom: 3px;
     }
 
     .contact-line.highlight {
@@ -304,39 +361,58 @@
       font-weight: 800;
     }
 
-    .logo-circle {
-      width: 120px;
-      height: 120px;
-      background-color: var(--burgundy);
+    /* Logotipo Fixo Rodapé (logo.png) */
+    .logo-container {
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: white;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
-    .logo-circle .brand-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      font-style: italic;
+    .logo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .logo-circle .brand-sub {
-      font-size: 0.55rem;
-      letter-spacing: 0.5px;
-      margin-top: -2px;
-    }
-
-    /* Esconde botões de remoção no PDF */
     .item-remove {
       color: red;
-      margin-left: 8px;
+      margin-left: 6px;
       cursor: pointer;
-      font-weight: normal;
+      font-size: 0.8rem;
+    }
+
+    .document-spacer {
+      flex: 1 1 180px;
+      min-height: 0;
+    }
+
+    @media (max-width: 600px) {
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .budget-document {
+        min-height: 0;
+        padding: 28px 20px;
+      }
+
+      .doc-brand-mark {
+        max-width: 100%;
+      }
+
+      .doc-header {
+        height: 136px;
+      }
+
+      .document-spacer {
+        min-height: 100px;
+      }
     }
   </style>
 </head>
@@ -344,71 +420,87 @@
 
   <div class="app-container">
     
-    <!-- Formulário de Preenchimento -->
+    <!-- PAINEL DE CONTROLE -->
     <div class="controls-panel">
-      <h2>Montar Orçamento NeuDelícias</h2>
+      <h2>Configurar Orçamento - NeuDelícias</h2>
       
       <div class="form-grid">
         <div class="form-group">
-          <label>Título do Menu/Kit:</label>
-          <input type="text" id="menuTitleInput" value="KIT LANCHE" oninput="updateDocument()">
-        </div>
-
-        <div class="form-group">
-          <label>Valor por Pessoa (R$):</label>
-          <input type="number" id="priceInput" value="15" step="0.5" oninput="updateDocument()">
+          <label>Subtítulo do Evento:</label>
+          <input type="text" id="locationInput" value="Só Confraternização" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
           <label>Quantidade de Pessoas:</label>
-          <input type="number" id="peopleInput" value="35" oninput="updateDocument()">
+          <input type="number" id="peopleInput" value="100" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
-          <label>Taxa Extra / Nota Fiscal (R$):</label>
-          <input type="number" id="taxInput" value="50" oninput="updateDocument()">
+          <label>Título Coluna Esquerda:</label>
+          <input type="text" id="col1TitleInput" value="OPÇÕES ENTRADAS" oninput="updateDocument()">
         </div>
 
         <div class="form-group">
-          <label>Adicionar Opção de ENTRADA / SALGADO:</label>
-          <div class="input-with-btn">
-            <input type="text" id="entradaInput" placeholder="Ex: 01 SANDUICHE NATURAL" onkeypress="handleKey(event, 'entrada')">
-            <button class="btn-add" onclick="addItem('entrada')">+</button>
+          <label>Título Coluna Direita:</label>
+          <input type="text" id="col2TitleInput" value="OPÇÕES JANTA" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Valor por Pessoa (R$):</label>
+          <input type="number" id="priceInput" value="48" step="0.5" oninput="updateDocument()">
+        </div>
+
+        <div class="form-group">
+          <label>Taxa da Nota Fiscal (R$):</label>
+          <input type="number" id="taxInput" placeholder="Ex: 50,00" min="0" step="0.01" oninput="updateDocument()">
+        </div>
+
+        <div class="items-grid">
+          <div class="form-group">
+            <label>Adicionar item na Esquerda:</label>
+            <div class="input-with-btn">
+              <input type="text" id="entradaInput" placeholder="Ex: Salgados Fritos" onkeypress="handleKey(event, 'entrada')">
+              <button class="btn-add" onclick="addItem('entrada')">+</button>
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label>Adicionar Opção de JANTA / PRATO:</label>
-          <div class="input-with-btn">
-            <input type="text" id="jantaInput" placeholder="Ex: 01 SUCO" onkeypress="handleKey(event, 'janta')">
-            <button class="btn-add" onclick="addItem('janta')">+</button>
+          <div class="form-group">
+            <label>Adicionar item na Direita:</label>
+            <div class="input-with-btn">
+              <input type="text" id="jantaInput" placeholder="Ex: 2 Proteínas" onkeypress="handleKey(event, 'janta')">
+              <button class="btn-add" onclick="addItem('janta')">+</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn-action" onclick="generatePDF()"> baixar PDF Agora</button>
+      <div class="action-buttons">
+        <button class="btn-action" onclick="generatePDF()">📥 Baixar PDF do Orçamento</button>
+        <button class="btn-action btn-whatsapp" onclick="shareOnWhatsApp()">Compartilhar no WhatsApp</button>
       </div>
+      <p class="share-status" id="shareStatus" role="status" aria-live="polite"></p>
     </div>
 
-    <!-- DOCUMENTO VISUAL DO ORÇAMENTO -->
+    <!-- DOCUMENTO DE ORÇAMENTO -->
     <div class="budget-document" id="pdfDocument">
       
       <div class="doc-header">
         <div class="doc-title-main">ORÇAMENTO</div>
-        <div class="doc-subtitle-brand">Neudelicias</div>
-        <div class="doc-kit-title" id="displayMenuTitle">KIT LANCHE</div>
+        <div class="doc-brand-mark">
+          <img src="logo-texto.png" alt="Neudelicias" class="doc-subtitle-brand-img">
+        </div>
+        <div class="doc-sub-location" id="displayLocation">Só Confraternização</div>
       </div>
 
       <table class="menu-table">
         <thead>
           <tr>
-            <th>OPÇÕES DE ENTRADA</th>
-            <th>OPÇÕES DE JANTA</th>
+            <th id="thCol1">OPÇÕES ENTRADAS</th>
+            <th id="thCol2">OPÇÕES JANTA</th>
           </tr>
         </thead>
         <tbody id="menuTableBody">
-          <!-- Linhas adicionadas dinamicamente via JS -->
+          <!-- Dinâmico -->
         </tbody>
         <tfoot>
           <tr class="service-row">
@@ -418,10 +510,12 @@
       </table>
 
       <div class="price-box">
-        <p id="displayPerPersonText">R$15,00 (quinze reais) por pessoa.</p>
-        <p id="displayTotalText">valor total equivalente a 35 pessoas = R$525,00 (quinhentos e vinte cinco reais)</p>
-        <p id="displayTaxText">+ R$ 50,00 da Emissão da Nota Fiscal</p>
+        <p id="displayPerPersonText">R$48,00 (quarenta e oito reais) por pessoa.</p>
+        <p id="displayTotalText">valor total equivalente a 100 pessoas = R$4.800,00 (quatro mil e oitocentos reais)</p>
+        <p id="displayTaxText" hidden></p>
       </div>
+
+      <div class="document-spacer"></div>
 
       <div class="qualities-bar">
         <div class="quality-item">COMPROMISSO</div>
@@ -435,23 +529,15 @@
             ESTAMOS À DISPOSIÇÃO PARA ESCLARECER QUAISQUER DÚVIDAS OU FORNECER INFORMAÇÕES ADICIONAIS
           </div>
           
-          <div class="contact-line">
-             (88) 99984-1599
-          </div>
-          <div class="contact-line">
-             IRINEUDALIMA123@HOTMAIL.COM
-          </div>
-          <div class="contact-line">
-            <strong>CNPJ:</strong> 58.428.085/0001-93
-          </div>
-          <div class="contact-line highlight">
-            Espaço Neudelicias, Rancho Chico Diniz (antiga casa amarela)
-          </div>
+          <div class="contact-line">📞 (88) 99984-1599</div>
+          <div class="contact-line">✉️ IRINEUDALIMA123@HOTMAIL.COM</div>
+          <div class="contact-line"><strong>CNPJ:</strong> 58.428.085/0001-93</div>
+          <div class="contact-line highlight">Espaço Neudelicias, Rancho Chico Diniz (antiga casa amarela)</div>
         </div>
 
-        <div class="logo-circle">
-          <div class="brand-name">NeuDelícias</div>
-          <div class="brand-sub">culinária caseira</div>
+        <!-- LOGO FIXA DO RODAPÉ (logo.png) -->
+        <div class="logo-container">
+          <img src="logo.png" alt="Logo NeuDelícias">
         </div>
       </div>
 
@@ -460,9 +546,29 @@
   </div>
 
   <script>
-    // Listas de opções
-    let entradas = ["01 SANDUICHE NATURAL", "01 TORTA DE FRANGO", "01 FATIA DE BOLO", "01 PÃO DE LEITE COM PATE"];
-    let jantas = ["01 SUCO"];
+    let entradas = [
+      "SALGADOS FRITOS E DE FORNO",
+      "TORRADAS",
+      "PÃOZINHO DE LEITE",
+      "PATE DE FRANGO",
+      "PATE DE ATUM",
+      "MINI HAMABUGUER",
+      "3 TABUAS DE FRIOS",
+      "EMPADAS ABERTO COM GOIABA E QUEIJO",
+      "TORTA DE FRANGO",
+      "TABUAS DE FRIOS COM FRUTAS"
+    ];
+
+    let jantas = [
+      "2 PROTEINAS",
+      "2 TIPOS DE ARROZ (BRANCO E A GREGA)",
+      "2 SALADAS",
+      "1 FAROFA",
+      "1 MASSA",
+      "SUCO",
+      "REFRIGERANTE",
+      "AGUA"
+    ];
 
     function handleKey(event, type) {
       if (event.key === 'Enter') {
@@ -496,93 +602,334 @@
       updateDocument();
     }
 
-    // Função simples de número por extenso para Reais
-    function valorPorExtenso(valor) {
-      if (valor === 15) return "quinze reais";
-      if (valor === 525) return "quinhentos e vinte cinco reais";
-      
-      const inteiros = Math.floor(valor);
-      return `${inteiros} reais`;
+    function numeroPorExtenso(n) {
+      if (!Number.isFinite(n) || Math.abs(n) > 999999999.99) {
+        return "valor inválido";
+      }
+
+      const centavosTotais = Math.round(Math.abs(n) * 100);
+      const reais = Math.floor(centavosTotais / 100);
+      const centavos = centavosTotais % 100;
+      const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+      const dezenasEspeciais = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+      const dezenas = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+      const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+      function grupoPorExtenso(valor) {
+        if (valor === 100) return "cem";
+
+        const partes = [];
+        const centena = Math.floor(valor / 100);
+        const resto = valor % 100;
+
+        if (centena > 0) partes.push(centenas[centena]);
+        if (resto >= 10 && resto < 20) {
+          partes.push(dezenasEspeciais[resto - 10]);
+        } else {
+          const dezena = Math.floor(resto / 10);
+          const unidade = resto % 10;
+          if (dezena > 0) partes.push(dezenas[dezena]);
+          if (unidade > 0) partes.push(unidades[unidade]);
+        }
+
+        return partes.join(" e ");
+      }
+
+      function inteiroPorExtenso(valor) {
+        if (valor === 0) return "zero";
+
+        const partes = [];
+        const milhoes = Math.floor(valor / 1000000);
+        const milhares = Math.floor(valor / 1000) % 1000;
+        const resto = valor % 1000;
+
+        if (milhoes > 0) {
+          partes.push(`${grupoPorExtenso(milhoes)} ${milhoes === 1 ? "milhão" : "milhões"}`);
+        }
+        if (milhares > 0) {
+          partes.push(milhares === 1 ? "mil" : `${grupoPorExtenso(milhares)} mil`);
+        }
+        if (resto > 0) partes.push(grupoPorExtenso(resto));
+
+        const conector = resto < 100 || resto % 100 === 0 ? " e " : ", ";
+        return partes.length > 1
+          ? `${partes.slice(0, -1).join(", ")}${conector}${partes[partes.length - 1]}`
+          : partes[0];
+      }
+
+      const partes = [];
+      if (reais > 0 || centavos === 0) {
+        partes.push(`${inteiroPorExtenso(reais)} ${reais === 1 ? "real" : "reais"}`);
+      }
+      if (centavos > 0) {
+        partes.push(`${inteiroPorExtenso(centavos)} ${centavos === 1 ? "centavo" : "centavos"}`);
+      }
+
+      return `${n < 0 ? "menos " : ""}${partes.join(" e ")}`;
     }
 
     function updateDocument() {
-      // Título do Menu
-      document.getElementById('displayMenuTitle').innerText = 
-        document.getElementById('menuTitleInput').value.toUpperCase() || 'KIT LANCHE';
+      document.getElementById('displayLocation').innerText =
+        document.getElementById('locationInput').value;
 
-      // Tabela de Opções
+      document.getElementById('thCol1').innerText =
+        document.getElementById('col1TitleInput').value.toUpperCase();
+      document.getElementById('thCol2').innerText =
+        document.getElementById('col2TitleInput').value.toUpperCase();
+
       const tbody = document.getElementById('menuTableBody');
       tbody.innerHTML = '';
-
-      const maxRows = Math.max(entradas.length, jantas.length, 4);
+      const maxRows = Math.max(entradas.length, jantas.length);
 
       for (let i = 0; i < maxRows; i++) {
         const tr = document.createElement('tr');
         
-        // Celda Entrada
-        const tdEntrada = document.createElement('td');
+        const td1 = document.createElement('td');
         if (entradas[i]) {
-          tdEntrada.innerHTML = `${entradas[i]} <span class="item-remove" onclick="removeItem('entrada', ${i})" title="Remover">✕</span>`;
+          td1.innerHTML = `${entradas[i]} <span class="item-remove" onclick="removeItem('entrada', ${i})" title="Remover">✕</span>`;
         } else {
-          tdEntrada.className = 'empty-cell';
+          td1.className = 'empty-cell';
         }
 
-        // Celda Janta
-        const tdJanta = document.createElement('td');
+        const td2 = document.createElement('td');
         if (jantas[i]) {
-          tdJanta.innerHTML = `${jantas[i]} <span class="item-remove" onclick="removeItem('janta', ${i})" title="Remover">✕</span>`;
+          td2.innerHTML = `${jantas[i]} <span class="item-remove" onclick="removeItem('janta', ${i})" title="Remover">✕</span>`;
         } else {
-          tdJanta.className = 'empty-cell';
+          td2.className = 'empty-cell';
         }
 
-        tr.appendChild(tdEntrada);
-        tr.appendChild(tdJanta);
+        tr.appendChild(td1);
+        tr.appendChild(td2);
         tbody.appendChild(tr);
       }
 
-      // Cálculos
       const price = parseFloat(document.getElementById('priceInput').value) || 0;
       const people = parseInt(document.getElementById('peopleInput').value) || 0;
       const tax = parseFloat(document.getElementById('taxInput').value) || 0;
       const total = price * people;
 
       document.getElementById('displayPerPersonText').innerText = 
-        `R$${price.toFixed(2).replace('.', ',')} (${valorPorExtenso(price)}) por pessoa.`;
+        `R$${price.toFixed(2).replace('.', ',')} (${numeroPorExtenso(price)}) por pessoa.`;
 
       document.getElementById('displayTotalText').innerText = 
-        `valor total equivalente a ${people} pessoas = R$${total.toFixed(2).replace('.', ',')} (${valorPorExtenso(total)})`;
+        `valor total equivalente a ${people} pessoas = R$${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${numeroPorExtenso(total)})`;
 
-      if (tax > 0) {
-        document.getElementById('displayTaxText').style.display = 'block';
-        document.getElementById('displayTaxText').innerText = 
-          `+ R$ ${tax.toFixed(2).replace('.', ',')} da Emissão da Nota Fiscal`;
-      } else {
-        document.getElementById('displayTaxText').style.display = 'none';
+      const taxText = document.getElementById('displayTaxText');
+      taxText.hidden = tax <= 0;
+      taxText.innerText = tax > 0
+        ? `+ R$ ${tax.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} da Emissão da Nota Fiscal`
+        : '';
+    }
+
+    async function createPDFBlob() {
+      const element = document.getElementById('pdfDocument');
+      const opt = {
+        margin: 0,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          scrollX: 0,
+          scrollY: 0,
+          ignoreElements: item => item.classList && item.classList.contains('item-remove'),
+          onclone: clonedDocument => {
+            const clonedElement = clonedDocument.getElementById('pdfDocument');
+            clonedElement.style.width = '210mm';
+            clonedElement.style.maxWidth = 'none';
+            clonedElement.style.minHeight = '297mm';
+            clonedElement.style.padding = '35px 9.8% 30px';
+            clonedElement.style.margin = '0';
+            clonedElement.style.boxShadow = 'none';
+            clonedElement.querySelectorAll('.item-remove').forEach(item => item.remove());
+          }
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await document.fonts.ready;
+      const images = [...element.querySelectorAll('img')];
+      await Promise.all(images.map(image => {
+        if (image.complete) {
+          if (image.naturalWidth === 0) {
+            throw new Error(`Não foi possível carregar a imagem ${image.src}`);
+          }
+          return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+          image.addEventListener('load', resolve, { once: true });
+          image.addEventListener('error', () => reject(new Error(`Não foi possível carregar a imagem ${image.src}`)), { once: true });
+        });
+      }));
+
+      const worker = html2pdf().set(opt).from(element).toCanvas();
+      const canvas = await worker.get('canvas');
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const exportContext = exportCanvas.getContext('2d');
+      exportContext.drawImage(canvas, 0, 0);
+
+      const horizontalBleed = Math.ceil(canvas.width / 100);
+      const verticalBleed = Math.ceil(canvas.height / 100);
+      exportContext.drawImage(
+        canvas,
+        0, verticalBleed, canvas.width, 1,
+        0, 0, canvas.width, verticalBleed
+      );
+      exportContext.drawImage(
+        canvas,
+        0, canvas.height - verticalBleed - 1, canvas.width, 1,
+        0, canvas.height - verticalBleed, canvas.width, verticalBleed
+      );
+      exportContext.drawImage(
+        canvas,
+        horizontalBleed, 0, 1, canvas.height,
+        0, 0, horizontalBleed, canvas.height
+      );
+      exportContext.drawImage(
+        canvas,
+        canvas.width - horizontalBleed - 1, 0, 1, canvas.height,
+        canvas.width - horizontalBleed, 0, horizontalBleed, canvas.height
+      );
+      exportContext.drawImage(
+        canvas,
+        horizontalBleed, verticalBleed, 1, 1,
+        0, 0, horizontalBleed, verticalBleed
+      );
+      exportContext.drawImage(
+        canvas,
+        canvas.width - horizontalBleed - 1, verticalBleed, 1, 1,
+        canvas.width - horizontalBleed, 0, horizontalBleed, verticalBleed
+      );
+      exportContext.drawImage(
+        canvas,
+        horizontalBleed, canvas.height - verticalBleed - 1, 1, 1,
+        0, canvas.height - verticalBleed, horizontalBleed, verticalBleed
+      );
+      exportContext.drawImage(
+        canvas,
+        canvas.width - horizontalBleed - 1, canvas.height - verticalBleed - 1, 1, 1,
+        canvas.width - horizontalBleed, canvas.height - verticalBleed, horizontalBleed, verticalBleed
+      );
+
+      await worker.toPdf();
+      const pdf = await worker.get('pdf');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const pageCanvasHeight = Math.round(exportCanvas.width * pageHeight / pageWidth);
+      const pageCount = Math.ceil(exportCanvas.height / pageCanvasHeight);
+
+      for (let page = pdf.getNumberOfPages(); page > 0; page--) {
+        pdf.deletePage(page);
+      }
+
+      for (let page = 0; page < pageCount; page++) {
+        pdf.addPage('a4', 'portrait');
+
+        const sourceY = page * pageCanvasHeight;
+        const sourceHeight = Math.min(pageCanvasHeight, exportCanvas.height - sourceY);
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = exportCanvas.width;
+        pageCanvas.height = sourceHeight;
+        pageCanvas.getContext('2d').drawImage(
+          exportCanvas,
+          0, sourceY, exportCanvas.width, sourceHeight,
+          0, 0, exportCanvas.width, sourceHeight
+        );
+
+        const imageHeight = sourceHeight === pageCanvasHeight
+          ? pageHeight
+          : sourceHeight * pageWidth / exportCanvas.width;
+        pdf.addImage(pageCanvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, pageWidth, imageHeight);
+      }
+
+      return pdf.output('blob');
+    }
+
+    function downloadPDF(blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'orcamento_neudelicias.pdf';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    function setShareStatus(message, linkUrl) {
+      const status = document.getElementById('shareStatus');
+      status.replaceChildren(document.createTextNode(message));
+
+      if (linkUrl) {
+        const link = document.createElement('a');
+        link.href = linkUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Abrir WhatsApp';
+        status.append(' ', link, ' e anexe o PDF baixado.');
       }
     }
 
-    // Função para gerar PDF
-    function generatePDF() {
-      // Oculta botões de remoção (X) durante a geração do PDF
-      const removes = document.querySelectorAll('.item-remove');
-      removes.forEach(el => el.style.display = 'none');
-
-      const element = document.getElementById('pdfDocument');
-      const opt = {
-        margin:       [10, 10, 10, 10],
-        filename:     'orcamento_neudelicias.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        // Exibe novamente os botões X na tela
-        removes.forEach(el => el.style.display = 'inline');
-      });
+    async function generatePDF() {
+      setShareStatus('Gerando o PDF...');
+      try {
+        const blob = await createPDFBlob();
+        downloadPDF(blob);
+        setShareStatus('PDF gerado e baixado.');
+      } catch (error) {
+        console.error('Não foi possível gerar o PDF:', error);
+        setShareStatus('Não foi possível gerar o PDF. Tente novamente.');
+      }
     }
 
-    // Inicializa a exibição
+    async function shareOnWhatsApp() {
+      const message = 'Olá! Segue o orçamento da NeuDelícias.';
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      let fileShareSupported = false;
+      if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
+        try {
+          fileShareSupported = navigator.canShare({
+            files: [new File([''], 'orcamento_neudelicias.pdf', { type: 'application/pdf' })]
+          });
+        } catch {
+          fileShareSupported = false;
+        }
+      }
+      const whatsappWindow = fileShareSupported ? null : window.open('about:blank', '_blank');
+
+      setShareStatus('Preparando o PDF para compartilhar...');
+      try {
+        const blob = await createPDFBlob();
+        const file = new File([blob], 'orcamento_neudelicias.pdf', { type: 'application/pdf' });
+
+        if (fileShareSupported) {
+          await navigator.share({
+            files: [file],
+            title: 'Orçamento NeuDelícias',
+            text: message
+          });
+          setShareStatus('PDF compartilhado.');
+          return;
+        }
+
+        downloadPDF(blob);
+        if (whatsappWindow) {
+          whatsappWindow.location.href = whatsappUrl;
+          setShareStatus('O PDF foi baixado. Anexe-o à conversa do WhatsApp.');
+        } else {
+          setShareStatus('O PDF foi baixado. Abra o WhatsApp e anexe o arquivo.', whatsappUrl);
+        }
+      } catch (error) {
+        if (whatsappWindow) whatsappWindow.close();
+        if (error.name === 'AbortError') {
+          setShareStatus('Compartilhamento cancelado.');
+          return;
+        }
+
+        console.error('Não foi possível compartilhar o orçamento:', error);
+        setShareStatus('Não foi possível preparar o compartilhamento. Tente baixar o PDF.');
+      }
+    }
+
     updateDocument();
   </script>
 </body>
