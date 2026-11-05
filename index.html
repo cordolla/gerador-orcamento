@@ -791,8 +791,27 @@
       backgroundImage.src = new URL('fundo.png', document.baseURI).href;
       await backgroundImage.decode();
 
-      const worker = html2pdf().set(opt).from(element).toCanvas();
-      const canvas = await worker.get('canvas');
+      const originalElementStyle = element.getAttribute('style');
+      element.style.width = '210mm';
+      element.style.maxWidth = 'none';
+      element.style.minHeight = '297mm';
+      element.style.height = 'auto';
+      element.style.padding = '35px 20.6mm 30px';
+      element.style.margin = '0';
+
+      let worker;
+      let canvas;
+      try {
+        worker = html2pdf().set(opt).from(element).toCanvas();
+        canvas = await worker.get('canvas');
+      } finally {
+        if (originalElementStyle === null) {
+          element.removeAttribute('style');
+        } else {
+          element.setAttribute('style', originalElementStyle);
+        }
+      }
+
       const pdfCanvas = document.createElement('canvas');
       pdfCanvas.width = canvas.width;
       pdfCanvas.height = canvas.height;
