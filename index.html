@@ -6,6 +6,8 @@
   <meta name="format-detection" content="telephone=no">
   <title>Gerador de Orçamento - NeuDelícias</title>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <!-- Fontes -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
@@ -936,16 +938,146 @@
       });
 
       document.querySelector('.app-container').appendChild(printPages);
+      return printPages;
     }
 
     window.addEventListener('afterprint', () => {
       document.getElementById('printPages')?.remove();
     });
 
-    function shareOnWhatsApp() {
+    async function createPDFBlob() {
+      if (typeof html2pdf !== 'function') {
+        throw new Error('A biblioteca de geração de PDF não foi carregada. Verifique sua conexão e tente novamente.');
+      }
+
+      await document.fonts.ready;
+      const printPages = createPrintPages();
+      printPages.style.cssText = 'display:block;position:fixed;left:-10000px;top:0;width:210mm;z-index:-1;pointer-events:none;';
+
+      try {
+        const images = [...printPages.querySelectorAll('img')];
+        await Promise.all(images.map(image => {
+          if (image.complete) {
+            if (image.naturalWidth === 0) {
+              throw new Error(`Não foi possível carregar a imagem ${image.src}`);
+            }
+            return Promise.resolve();
+          }
+
+          return new Promise((resolve, reject) => {
+            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('error', () => reject(new Error(`Não foi possível carregar a imagem ${image.src}`)), { once: true });
+          });
+        }));
+
+        const options = {
+          margin: 0,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            scrollX: 0,
+            scrollY: 0,
+            backgroundColor: '#f8f7f0',
+            useCORS: true
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        let pdf;
+
+        for (const [pageIndex, page] of [...printPages.children].entries()) {
+          const worker = html2pdf().set(options).from(page).toCanvas();
+          const canvas = await worker.get('canvas');
+
+          if (pageIndex === 0) {
+            await worker.toPdf();
+            pdf = await worker.get('pdf');
+            while (pdf.getNumberOfPages() > 1) {
+              pdf.deletePage(pdf.getNumberOfPages());
+            }
+          } else {
+            pdf.addPage('a4', 'portrait');
+          }
+
+          pdf.addImage(
+            canvas.toDataURL('image/jpeg', 0.98),
+            'JPEG',
+            0,
+            0,
+            pdf.internal.pageSize.getWidth(),
+            pdf.internal.pageSize.getHeight()
+          );
+        }
+
+        return pdf.output('blob');
+      } finally {
+        printPages.remove();
+      }
+    }
+
+    function downloadPDF(blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'orcamento_neudelicias.pdf';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    function setShareStatus(message, linkUrl) {
+      const status = document.getElementById('shareStatus');
+      status.replaceChildren(document.createTextNode(message));
+
+      if (linkUrl) {
+        const link = document.createElement('a');
+        link.href = linkUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Abrir WhatsApp';
+        status.append(' ', link, ' e anexe o PDF baixado.');
+      }
+    }
+
+    async function shareOnWhatsApp() {
       const message = 'Olá! Segue o orçamento da NeuDelícias.';
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      const whatsappWindow = window.open('about:blank', '_blank');
+      setShareStatus('Gerando o PDF para compartilhar...');
+
+      try {
+        const blob = await createPDFBlob();
+        const file = new File([blob], 'orcamento_neudelicias.pdf', { type: 'application/pdf' });
+        const canShareFile = typeof navigator.share === 'function'
+          && typeof navigator.canShare === 'function'
+          && navigator.canShare({ files: [file] });
+
+        if (canShareFile) {
+          if (whatsappWindow) whatsappWindow.close();
+          await navigator.share({
+            files: [file],
+            title: 'Orçamento NeuDelícias',
+            text: message
+          });
+          setShareStatus('PDF compartilhado.');
+          return;
+        }
+
+        downloadPDF(blob);
+        if (whatsappWindow) {
+          whatsappWindow.location.href = whatsappUrl;
+          setShareStatus('O PDF foi baixado. Anexe-o à conversa do WhatsApp.');
+        } else {
+          setShareStatus('O PDF foi baixado. Abra o WhatsApp e anexe o arquivo.', whatsappUrl);
+        }
+      } catch (error) {
+        if (whatsappWindow) whatsappWindow.close();
+        if (error.name === 'AbortError') {
+          setShareStatus('Compartilhamento cancelado.');
+          return;
+        }
+
+        console.error('Não foi possível compartilhar o orçamento:', error);
+        setShareStatus('Não foi possível preparar o PDF. Tente gerar e baixar o arquivo.');
+      }
     }
 
     updateDocument();
