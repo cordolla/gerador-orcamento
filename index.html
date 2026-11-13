@@ -6,9 +6,6 @@
   <meta name="format-detection" content="telephone=no">
   <title>Gerador de Orçamento - NeuDelícias</title>
   
-  <!-- Biblioteca para gerar o PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
   <!-- Fontes -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
@@ -38,7 +35,7 @@
       margin: 0 auto;
     }
 
-    /* Painel de Controles (Não sai no PDF) */
+    /* Painel de Controles (Não sai na impressão/PDF) */
     .controls-panel {
       background: #ffffff;
       padding: 25px;
@@ -165,7 +162,7 @@
       font-weight: 700;
     }
 
-    /* ESTILO DO DOCUMENTO PDF */
+    /* ESTILO DO DOCUMENTO */
     .budget-document {
       background-color: #f8f7f0;
       background-image: url('fundo.png');
@@ -189,7 +186,6 @@
       position: relative;
     }
 
-    /* "ORÇAMENTO" em Montserrat puro e elegante */
     .doc-title-main {
       font-family: 'Montserrat', sans-serif;
       font-size: 1.65rem;
@@ -239,7 +235,7 @@
       width: 100%;
       table-layout: fixed;
       border-collapse: collapse;
-      margin-top: 0;
+      margin-top: 15px;
       border: 1.5px solid #666;
       background-color: rgba(255, 255, 255, 0.95);
     }
@@ -375,7 +371,6 @@
       font-weight: 800;
     }
 
-    /* Logotipo Fixo Rodapé (logo.png) */
     .logo-container {
       width: 155px;
       height: 155px;
@@ -402,30 +397,95 @@
     }
 
     .document-spacer {
-      flex: 1 1 180px;
-      min-height: 0;
+      flex: 1 1 auto;
+      min-height: 20px;
     }
 
-    @media (max-width: 600px) {
-      .action-buttons {
-        grid-template-columns: 1fr;
+    .print-pages {
+      display: none;
+    }
+
+    .print-page {
+      position: relative;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: 210mm;
+      height: 297mm;
+      padding: 35px 20.6mm 30px;
+      overflow: hidden;
+      background: #f8f7f0 url('fundo.png') center / 100% 100% no-repeat;
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .print-page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .print-page .doc-header {
+      flex: 0 0 136px;
+    }
+
+    .print-page .menu-table {
+      flex: 0 0 auto;
+    }
+
+    .print-page > .price-box,
+    .print-page > .document-footer {
+      flex-shrink: 0;
+    }
+
+    .print-page.print-compact .menu-table td {
+      height: 20px;
+      padding: 1px 8px;
+    }
+
+    .print-page.print-compact .service-row td {
+      padding: 6px;
+    }
+
+    .print-page-spacer {
+      flex: 1 1 auto;
+      min-height: 20px;
+    }
+
+    @media print {
+      body {
+        background-color: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
-      .budget-document {
-        min-height: 0;
-        padding: 28px 20px;
+      .app-container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
       }
 
-      .doc-brand-mark {
-        max-width: 100%;
+      .controls-panel {
+        display: none !important;
       }
 
-      .doc-header {
-        height: 136px;
+      #pdfDocument {
+        display: none !important;
       }
 
-      .document-spacer {
-        min-height: 100px;
+      .print-pages {
+        display: block !important;
+      }
+
+      .print-page {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 0 !important;
       }
     }
   </style>
@@ -489,13 +549,13 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn-action" onclick="generatePDF()">📥 Baixar PDF do Orçamento</button>
+        <button class="btn-action" onclick="generatePDF()">📥 Gerar PDF (Imprimir / Salvar)</button>
         <button class="btn-action btn-whatsapp" onclick="shareOnWhatsApp()">Compartilhar no WhatsApp</button>
       </div>
       <p class="share-status" id="shareStatus" role="status" aria-live="polite"></p>
     </div>
 
-    <!-- DOCUMENTO DE ORÇAMENTO -->
+    <!-- DOCUMENTO DE ORÇAMENTO (ESTRUTURA ORIGINAL ÍNTEGRA) -->
     <div class="budget-document" id="pdfDocument">
       
       <div class="doc-header">
@@ -531,27 +591,29 @@
 
       <div class="document-spacer"></div>
 
-      <div class="qualities-bar">
-        <div class="quality-item">COMPROMISSO</div>
-        <div class="quality-item">QUALIDADE</div>
-        <div class="quality-item">EXPERIÊNCIA</div>
-      </div>
-
-      <div class="footer-section">
-        <div class="company-info">
-          <div class="disclaimer-text">
-            ESTAMOS À DISPOSIÇÃO PARA ESCLARECER QUAISQUER DÚVIDAS OU FORNECER INFORMAÇÕES ADICIONAIS
-          </div>
-          
-          <div class="contact-line">📞 (88) 99984-1599</div>
-          <div class="contact-line">✉️ IRINEUDALIMA123@HOTMAIL.COM</div>
-          <div class="contact-line"><strong>CNPJ:</strong> 58.428.085/0001-93</div>
-          <div class="contact-line highlight">Espaço Neudelicias, Rancho Chico Diniz (antiga casa amarela)</div>
+      <div class="document-footer">
+        <div class="qualities-bar">
+          <div class="quality-item">COMPROMISSO</div>
+          <div class="quality-item">QUALIDADE</div>
+          <div class="quality-item">EXPERIÊNCIA</div>
         </div>
 
-        <!-- LOGO FIXA DO RODAPÉ (logo.png) -->
-        <div class="logo-container">
-          <img src="logo.png" alt="Logo NeuDelícias">
+        <div class="footer-section">
+          <div class="company-info">
+            <div class="disclaimer-text">
+              ESTAMOS À DISPOSIÇÃO PARA ESCLARECER QUAISQUER DÚVIDAS OU FORNECER INFORMAÇÕES ADICIONAIS
+            </div>
+
+            <!-- Emojis mantidos perfeitamente -->
+            <div class="contact-line">📞 (88) 99984-1599</div>
+            <div class="contact-line">✉️ IRINEUDALIMA123@HOTMAIL.COM</div>
+            <div class="contact-line"><strong>CNPJ:</strong> 58.428.085/0001-93</div>
+            <div class="contact-line highlight">Espaço Neudelicias, Rancho Chico Diniz (antiga casa amarela)</div>
+          </div>
+
+          <div class="logo-container">
+            <img src="logo.png" alt="Logo NeuDelícias">
+          </div>
         </div>
       </div>
 
@@ -738,220 +800,152 @@
         !hasPrice && tax <= 0;
     }
 
-    async function createPDFBlob() {
-      const element = document.getElementById('pdfDocument');
-      const opt = {
-        margin: 0,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          scrollX: 0,
-          scrollY: 0,
-          backgroundColor: null,
-          ignoreElements: item => item.classList && item.classList.contains('item-remove'),
-          onclone: clonedDocument => {
-            clonedDocument.querySelectorAll('#pdfDocument').forEach(clonedElement => {
-              clonedElement.style.width = '210mm';
-              clonedElement.style.maxWidth = 'none';
-              clonedElement.style.minHeight = '297mm';
-              clonedElement.style.padding = '35px 20.6mm 30px';
-              clonedElement.style.margin = '0';
-              clonedElement.style.boxShadow = 'none';
-              clonedElement.style.backgroundColor = 'transparent';
-              clonedElement.style.backgroundImage = 'none';
-
-              const brandMark = clonedElement.querySelector('.doc-brand-mark');
-              if (brandMark) brandMark.style.maxWidth = 'none';
-
-              const spacer = clonedElement.querySelector('.document-spacer');
-              if (spacer) {
-                spacer.style.flex = '1 1 180px';
-                spacer.style.minHeight = '0';
-              }
-
-              clonedElement.querySelectorAll('.contact-line a').forEach(link => {
-                link.style.color = 'inherit';
-                link.style.textDecoration = 'none';
-              });
-
-              clonedElement.querySelectorAll('.item-remove').forEach(item => item.remove());
-
-              let ancestor = clonedElement.parentElement;
-              while (ancestor) {
-                ancestor.style.backgroundColor = 'transparent';
-                ancestor.style.backgroundImage = 'none';
-                ancestor = ancestor.parentElement;
-              }
-            });
-          }
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await document.fonts.ready;
-      const images = [...element.querySelectorAll('img')];
-      await Promise.all(images.map(image => {
-        if (image.complete) {
-          if (image.naturalWidth === 0) {
-            throw new Error(`Não foi possível carregar a imagem ${image.src}`);
-          }
-          return Promise.resolve();
-        }
-
-        return new Promise((resolve, reject) => {
-          image.addEventListener('load', resolve, { once: true });
-          image.addEventListener('error', () => reject(new Error(`Não foi possível carregar a imagem ${image.src}`)), { once: true });
-        });
-      }));
-
-      const backgroundImage = new Image();
-      backgroundImage.src = new URL('fundo.png', document.baseURI).href;
-      await backgroundImage.decode();
-
-      const originalElementStyle = element.getAttribute('style');
-      element.style.width = '210mm';
-      element.style.maxWidth = 'none';
-      element.style.minHeight = '297mm';
-      element.style.height = 'auto';
-      element.style.padding = '35px 20.6mm 30px';
-      element.style.margin = '0';
-
-      let worker;
-      let canvas;
+    function generatePDF() {
       try {
-        worker = html2pdf().set(opt).from(element).toCanvas();
-        canvas = await worker.get('canvas');
-      } finally {
-        if (originalElementStyle === null) {
-          element.removeAttribute('style');
-        } else {
-          element.setAttribute('style', originalElementStyle);
-        }
-      }
-
-      const pdfCanvas = document.createElement('canvas');
-      pdfCanvas.width = canvas.width;
-      pdfCanvas.height = canvas.height;
-      const pdfContext = pdfCanvas.getContext('2d');
-      pdfContext.drawImage(backgroundImage, 0, 0, pdfCanvas.width, pdfCanvas.height);
-      pdfContext.drawImage(canvas, 0, 0);
-
-      await worker.toPdf();
-      const pdf = await worker.get('pdf');
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const pageCanvasHeight = Math.round(pdfCanvas.width * pageHeight / pageWidth);
-      const pageCount = Math.ceil(pdfCanvas.height / pageCanvasHeight);
-
-      for (let page = pdf.getNumberOfPages(); page > 0; page--) {
-        pdf.deletePage(page);
-      }
-
-      for (let page = 0; page < pageCount; page++) {
-        pdf.addPage('a4', 'portrait');
-
-        const sourceY = page * pageCanvasHeight;
-        const sourceHeight = Math.min(pageCanvasHeight, pdfCanvas.height - sourceY);
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = pdfCanvas.width;
-        pageCanvas.height = sourceHeight;
-        pageCanvas.getContext('2d').drawImage(
-          pdfCanvas,
-          0, sourceY, pdfCanvas.width, sourceHeight,
-          0, 0, pdfCanvas.width, sourceHeight
-        );
-
-        const imageHeight = sourceHeight === pageCanvasHeight
-          ? pageHeight
-          : sourceHeight * pageWidth / pdfCanvas.width;
-        pdf.addImage(pageCanvas.toDataURL('image/jpeg', 0.98), 'JPEG', 0, 0, pageWidth, imageHeight);
-      }
-
-      return pdf.output('blob');
-    }
-
-    function downloadPDF(blob) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'orcamento_neudelicias.pdf';
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    }
-
-    function setShareStatus(message, linkUrl) {
-      const status = document.getElementById('shareStatus');
-      status.replaceChildren(document.createTextNode(message));
-
-      if (linkUrl) {
-        const link = document.createElement('a');
-        link.href = linkUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = 'Abrir WhatsApp';
-        status.append(' ', link, ' e anexe o PDF baixado.');
-      }
-    }
-
-    async function generatePDF() {
-      setShareStatus('Gerando o PDF...');
-      try {
-        const blob = await createPDFBlob();
-        downloadPDF(blob);
-        setShareStatus('PDF gerado e baixado.');
+        createPrintPages();
+        window.print();
       } catch (error) {
-        console.error('Não foi possível gerar o PDF:', error);
-        setShareStatus('Não foi possível gerar o PDF. Tente novamente.');
+        console.error('Não foi possível preparar as páginas do orçamento:', error);
+        window.alert(error.message);
       }
     }
 
-    async function shareOnWhatsApp() {
+    function createPrintPages() {
+      document.getElementById('printPages')?.remove();
+
+      const sourceDocument = document.getElementById('pdfDocument');
+      const sourceTable = sourceDocument.querySelector('.menu-table');
+      const sourceRows = [...sourceTable.tBodies[0].rows];
+      const sourceHeader = sourceDocument.querySelector('.doc-header');
+      const sourcePriceBox = sourceDocument.querySelector('.price-box');
+      const sourceFooter = sourceDocument.querySelector('.document-footer');
+      const printPages = document.createElement('div');
+      printPages.id = 'printPages';
+      printPages.className = 'print-pages';
+
+      function cloneWithoutIds(element) {
+        const clone = element.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.querySelectorAll('[id]').forEach(item => item.removeAttribute('id'));
+        clone.querySelectorAll('.item-remove').forEach(item => item.remove());
+        return clone;
+      }
+
+      function createPage(rows, firstPage, lastPage, compact = false) {
+        const page = document.createElement('section');
+        page.className = 'print-page';
+        if (compact) page.classList.add('print-compact');
+
+        if (firstPage) page.appendChild(cloneWithoutIds(sourceHeader));
+
+        const table = cloneWithoutIds(sourceTable);
+        table.tBodies[0].replaceChildren(...rows.map(cloneWithoutIds));
+        if (!lastPage) table.tFoot.remove();
+        page.appendChild(table);
+
+        if (lastPage) {
+          page.appendChild(cloneWithoutIds(sourcePriceBox));
+          const spacer = document.createElement('div');
+          spacer.className = 'print-page-spacer';
+          page.append(spacer, cloneWithoutIds(sourceFooter));
+        }
+
+        return page;
+      }
+
+      const measurementPage = createPage(sourceRows, true, true);
+      measurementPage.style.cssText += 'position:fixed;left:-10000px;top:0;visibility:hidden;';
+      document.body.appendChild(measurementPage);
+
+      const pageStyle = window.getComputedStyle(measurementPage);
+      const pageContentHeight = measurementPage.getBoundingClientRect().height
+        - parseFloat(pageStyle.paddingTop) - parseFloat(pageStyle.paddingBottom);
+      const headerHeight = measurementPage.querySelector('.doc-header').getBoundingClientRect().height;
+      const table = measurementPage.querySelector('.menu-table');
+      const tableStyle = window.getComputedStyle(table);
+      const tableTopGap = parseFloat(tableStyle.marginTop);
+      const tableHeaderHeight = table.tHead.getBoundingClientRect().height;
+      const rowHeights = [...table.tBodies[0].rows]
+        .map(row => row.getBoundingClientRect().height);
+      const serviceHeight = table.tFoot.getBoundingClientRect().height;
+      const priceBox = measurementPage.querySelector('.price-box');
+      const priceHeight = sourcePriceBox.hidden ? 0 : priceBox.getBoundingClientRect().height;
+      const footerHeight = measurementPage.querySelector('.document-footer').getBoundingClientRect().height;
+      measurementPage.remove();
+
+      const compactMeasurementPage = createPage(sourceRows, true, true, true);
+      compactMeasurementPage.style.cssText += 'position:fixed;left:-10000px;top:0;visibility:hidden;';
+      document.body.appendChild(compactMeasurementPage);
+      const compactTable = compactMeasurementPage.querySelector('.menu-table');
+      const compactRowHeights = [...compactTable.tBodies[0].rows]
+        .map(row => row.getBoundingClientRect().height);
+      const compactServiceHeight = compactTable.tFoot.getBoundingClientRect().height;
+      compactMeasurementPage.remove();
+
+      const layoutSafety = 8;
+      const firstPageStart = headerHeight + tableTopGap + tableHeaderHeight;
+      const continuationStart = tableTopGap + tableHeaderHeight;
+      const firstPageCapacity = pageContentHeight - firstPageStart - layoutSafety;
+      const continuationCapacity = pageContentHeight - continuationStart - layoutSafety;
+      const firstFinalCapacity = pageContentHeight - firstPageStart - compactServiceHeight
+        - priceHeight - footerHeight - 24 - layoutSafety;
+      const continuationFinalCapacity = pageContentHeight - continuationStart - compactServiceHeight
+        - priceHeight - footerHeight - 24 - layoutSafety;
+
+      let pageRows;
+      pageRows = [];
+      let rowIndex = 0;
+      let pageIndex = 0;
+
+      while (rowIndex < sourceRows.length || pageRows.length === 0) {
+        const remainingHeight = compactRowHeights.slice(rowIndex)
+          .reduce((total, height) => total + height, 0);
+        const finalCapacity = pageIndex === 0
+          ? firstFinalCapacity
+          : continuationFinalCapacity;
+
+        if (remainingHeight <= finalCapacity || rowIndex === sourceRows.length - 1) {
+          pageRows.push(sourceRows.slice(rowIndex));
+          break;
+        }
+
+        const currentCapacity = pageIndex === 0
+          ? firstPageCapacity
+          : continuationCapacity;
+        const startIndex = rowIndex;
+        let currentHeight = 0;
+
+        while (rowIndex < sourceRows.length - 1) {
+          const nextHeight = rowHeights[rowIndex];
+          if (currentHeight + nextHeight > currentCapacity) break;
+          currentHeight += nextHeight;
+          rowIndex++;
+        }
+
+        if (rowIndex === startIndex) {
+          rowIndex++;
+        }
+
+        pageRows.push(sourceRows.slice(startIndex, rowIndex));
+        pageIndex++;
+      }
+
+      pageRows.forEach((rows, pageIndex) => {
+        const lastPage = pageIndex === pageRows.length - 1;
+        printPages.appendChild(createPage(rows, pageIndex === 0, lastPage, lastPage));
+      });
+
+      document.querySelector('.app-container').appendChild(printPages);
+    }
+
+    window.addEventListener('afterprint', () => {
+      document.getElementById('printPages')?.remove();
+    });
+
+    function shareOnWhatsApp() {
       const message = 'Olá! Segue o orçamento da NeuDelícias.';
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      let fileShareSupported = false;
-      if (typeof navigator.share === 'function' && typeof navigator.canShare === 'function') {
-        try {
-          fileShareSupported = navigator.canShare({
-            files: [new File([''], 'orcamento_neudelicias.pdf', { type: 'application/pdf' })]
-          });
-        } catch {
-          fileShareSupported = false;
-        }
-      }
-      const whatsappWindow = fileShareSupported ? null : window.open('about:blank', '_blank');
-
-      setShareStatus('Preparando o PDF para compartilhar...');
-      try {
-        const blob = await createPDFBlob();
-        const file = new File([blob], 'orcamento_neudelicias.pdf', { type: 'application/pdf' });
-
-        if (fileShareSupported) {
-          await navigator.share({
-            files: [file],
-            title: 'Orçamento NeuDelícias',
-            text: message
-          });
-          setShareStatus('PDF compartilhado.');
-          return;
-        }
-
-        downloadPDF(blob);
-        if (whatsappWindow) {
-          whatsappWindow.location.href = whatsappUrl;
-          setShareStatus('O PDF foi baixado. Anexe-o à conversa do WhatsApp.');
-        } else {
-          setShareStatus('O PDF foi baixado. Abra o WhatsApp e anexe o arquivo.', whatsappUrl);
-        }
-      } catch (error) {
-        if (whatsappWindow) whatsappWindow.close();
-        if (error.name === 'AbortError') {
-          setShareStatus('Compartilhamento cancelado.');
-          return;
-        }
-
-        console.error('Não foi possível compartilhar o orçamento:', error);
-        setShareStatus('Não foi possível preparar o compartilhamento. Tente baixar o PDF.');
-      }
+      window.open(whatsappUrl, '_blank');
     }
 
     updateDocument();
