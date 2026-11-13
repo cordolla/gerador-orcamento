@@ -551,7 +551,7 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn-action" onclick="generatePDF()">📥 Gerar PDF (Imprimir / Salvar)</button>
+        <button class="btn-action" onclick="generatePDF()">📥 Baixar PDF do Orçamento</button>
         <button class="btn-action btn-whatsapp" onclick="shareOnWhatsApp()">Compartilhar no WhatsApp</button>
       </div>
       <p class="share-status" id="shareStatus" role="status" aria-live="polite"></p>
@@ -802,13 +802,15 @@
         !hasPrice && tax <= 0;
     }
 
-    function generatePDF() {
+    async function generatePDF() {
+      setShareStatus('Gerando o PDF...');
       try {
-        createPrintPages();
-        window.print();
+        const blob = await createPDFBlob();
+        downloadPDF(blob);
+        setShareStatus('PDF gerado e baixado.');
       } catch (error) {
-        console.error('Não foi possível preparar as páginas do orçamento:', error);
-        window.alert(error.message);
+        console.error('Não foi possível gerar o PDF:', error);
+        setShareStatus('Não foi possível gerar o PDF. Verifique sua conexão e tente novamente.');
       }
     }
 
@@ -961,11 +963,13 @@
             if (image.naturalWidth === 0) {
               throw new Error(`Não foi possível carregar a imagem ${image.src}`);
             }
-            return Promise.resolve();
+            return image.decode();
           }
 
           return new Promise((resolve, reject) => {
-            image.addEventListener('load', resolve, { once: true });
+            image.addEventListener('load', () => {
+              image.decode().then(resolve, reject);
+            }, { once: true });
             image.addEventListener('error', () => reject(new Error(`Não foi possível carregar a imagem ${image.src}`)), { once: true });
           });
         }));
